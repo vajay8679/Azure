@@ -1,0 +1,26 @@
+{
+    "name": "FullCopyPipeline",
+    "properties": {
+        "activities": [{
+            "name": "FullCopyActivity",
+            "type": "Copy",
+            "typeProperties": {
+                "source": {
+                    "type": "SqlSource"
+                },
+                "sink": {
+                    "type": "BlobSink"
+                }
+            },
+
+            "inputs": [{
+                "referenceName": "SourceDataset",
+                "type": "DatasetReference"
+            }],
+            "outputs": [{
+                "referenceName": "SinkDataset",
+                "type": "DatasetReference"
+            }]
+        }]
+    }
+}

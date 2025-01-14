@@ -1,0 +1,17 @@
+{
+    "name": "SinkDataset",
+    "properties": {
+        "type": "AzureBlob",
+        "typeProperties": {
+            "folderPath": "adftutorial/incchgtracking",
+            "fileName": "@CONCAT('Incremental-', pipeline().RunId, '.txt')",
+            "format": {
+                "type": "TextFormat"
+            }
+        },
+        "linkedServiceName": {
+            "referenceName": "AzureStorageLinkedService",
+            "type": "LinkedServiceReference"
+        }
+    }
+}

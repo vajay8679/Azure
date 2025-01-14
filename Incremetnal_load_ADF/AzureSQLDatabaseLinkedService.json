@@ -1,0 +1,11 @@
+{
+    "name": "AzureSqlDatabaseLinkedService",
+    "properties": {
+            "type": "AzureSqlDatabase",
+            "typeProperties": {
+                "connectionString": "Server=tcp:mysqlserverajay.database.windows.net,1433;Database=mySampleDatabase;"
+            },
+            "authenticationType": "ManagedIdentity",
+            "annotations": []
+        }
+    }

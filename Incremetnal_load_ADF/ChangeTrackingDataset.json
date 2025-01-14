@@ -1,0 +1,13 @@
+{
+    "name": " ChangeTrackingDataset",
+    "properties": {
+        "type": "AzureSqlTable",
+        "typeProperties": {
+            "tableName": "table_store_ChangeTracking_version"
+        },
+        "linkedServiceName": {
+            "referenceName": "AzureSQLDatabaseLinkedService",
+            "type": "LinkedServiceReference"
+        }
+    }
+}
