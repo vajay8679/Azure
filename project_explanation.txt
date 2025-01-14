@@ -1,0 +1,31 @@
+we have created one of the health care end to end data pipeline project  for claims, eligibility data, providers data, drugs data, farmacy data,
+
+actually what happens if in US for any particular procesdure we can not get to know the cahrgw of that paerticular procedure till the time provider is going to raise a claim to the insurance comapny , based on the claim we have to pay the a copy amount that generally a individual pay, 
+
+
+now we built a product that help employees to search the prices of any procdeure using our portal 
+and they can get the detials with in policies & out policies, charges and for different differnt providers with theirs providerrs feedback, ranking andcsome  otehr detials, to get this details we were using one machine learning models, that helps us to provides the prdication of the prcies,
+
+what happens actually for this machine learing system we have to provide the historical data and incremerntal data for our claiims, so my part was to buid data pipeline for different differnt kind of datasets claims, eligibily , privders and drugs and farmacy so biggest challenfges was that we claims data in different differnt formats among all the insurance company, now we have approx 40-50 insurcane comapny we had, from which we are receing claims.
+
+
+and all those companies , so biggest challge was to build a unique platform to read this files from different different formats like csv, tsv, excel, fixedwith, json , parqwet and load it in platinaum layer, so here we build the metadata for all the insurance company that was helping us to create 
+the spark structure to read the files on the fly and then with the help of databricks and spark we are reading this filw with one single code base and later we were doing some set of pre processing , validation , post processing on the data . example like validation ssn,dob, address, dataprofiler reprot and all,
+
+after that once we will find the data is looking good then we  are moving this data in silver layer 
+here we are using spark only with databricks , sometimes wer are getting files onf 10-15 gb, and no. of records 10-15milion, files 30-40 fiels every day,
+
+Now here we are doing 50-60 trandofermation with the help of spark and later from silver to gold layer we ar doing all the trandofmration witht the help of database that is snowflake, it is becauswe we were doinf some lookup with our claims data with different types of data like fisiblity, providers information,farmacy's information, drug infromation and others, there things are also dynamic like each insurance companies have different different types of identical files , so those queires written in a such a way that it can accept any kind of such scenario based on the data configurations, so we are running 200-300 sql queries  to process one file.
+
+
+If you will talk about the architecture of 
+
+claims data is coming over the datalake in form of tsv, csv, json, parquet format from there once file get arrived our databricks job get trigger based on the file uploaded one databricks job get start and it runs and load with all the transformations, validations and all it load data into the  silver layer that we called it as a snowflake, after that we are using adf to run the sql based transofrmation from silver to gold layer where we lookup the data with providers farmary and others,
+
+
+cluster works with airflow
+
+
+if 10 file upload at once then we can schedule based trigger with the help of trigger
+
+databricks with airflow

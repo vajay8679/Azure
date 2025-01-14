@@ -1,0 +1,190 @@
+Employee table:
++----+-------+--------+--------------+
+| id | name  | salary | departmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 70000  | 1            |
+| 2  | Jim   | 90000  | 1            |
+| 3  | Henry | 80000  | 2            |
+| 4  | Sam   | 60000  | 2            |
+| 5  | Max   | 90000  | 1            |
++----+-------+--------+--------------+
+Department table:
++----+-------+
+| id | name  |
++----+-------+
+| 1  | IT    |
+| 2  | Sales |
++----+-------+
+
+Find the second highest salaried employee in each department
+using pyspark
+
+
+
+--------------------------------------------------------------
+
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, dense_rank
+from pyspark.sql.window import Window
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("SecondHighestSalary").getOrCreate()
+
+# Create Employee DataFrame
+employee_data = [
+    (1, "Joe", 70000, 1),
+    (2, "Jim", 90000, 1),
+    (3, "Henry", 80000, 2),
+    (4, "Sam", 60000, 2),
+    (5, "Max", 90000, 1),
+]
+employee_columns = ["id", "name", "salary", "departmentId"]
+employee_df = spark.createDataFrame(employee_data, schema=employee_columns)
+
+# Create Department DataFrame
+department_data = [
+    (1, "IT"),
+    (2, "Sales"),
+]
+department_columns = ["id", "name"]
+department_df = spark.createDataFrame(department_data, schema=department_columns)
+
+# Define Window Specification
+window_spec = Window.partitionBy("departmentId").orderBy(col("salary").desc())
+
+# Add a rank column to rank salaries within each department
+ranked_df = employee_df.withColumn("rank", dense_rank().over(window_spec))
+
+# Filter the second-highest salary
+second_highest_df = ranked_df.filter(col("rank") == 2).select("id", "name", "salary", "departmentId")
+
+# Join with department table to get department names
+result_df = second_highest_df.join(department_df, second_highest_df.departmentId == department_df.id) \
+    .select(second_highest_df.id, "name", "salary", department_df.name.alias("department"))
+
+# Show the result
+result_df.show()
+
+
+
+---------------------------------------------------
+
+
+To convert a timestamp column to a date column in PySpark with the format yyyy-MM-dd, you can use the to_date function. Here's how you can do it:
+
+
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import to_date
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("ConvertTimestampToDate").getOrCreate()
+
+# Create a sample DataFrame with a timestamp column
+data = [("2024-12-10 15:30:00",), ("2024-12-11 09:45:00",), ("2024-12-12 18:20:00",)]
+columns = ["timestamp_col"]
+df = spark.createDataFrame(data, columns)
+
+# Convert timestamp to date
+df_with_date = df.withColumn("date_col", to_date("timestamp_col"))
+
+# Show the results
+df_with_date.show()
+
+
+
+-----------------------------------------------------------
+
+
+How you was securing the data that was coming over azure data gen2?
+What is unity catelog?
+What type of transformation you was performing over data?
+you have raw data and and convert timestartp into datetime format  
+views vs tables?
+which trigger we should use to trigger multiple pipeline in Azure
+what all type of triggers we have in Azure
+can we triger AWS glue using SQS
+if a event trigger start a job and it didn;t finished before next job execution start then what will happen to next job
+how to set retry approach in such case in Azure and AWS
+
+
+------------------------------------------------------------------------
+
+
+
+
+
+
+Yes, you can use a *Tumbling Window Trigger* for *incremental loads* in *Azure Data Factory (ADF)*. In fact, the Tumbling Window Trigger is an excellent choice for scenarios involving incremental data processing, where you want to load data in discrete, non-overlapping time windows, ensuring that each time window’s data is processed separately and without overlap.
+
+### How Tumbling Window Trigger Works for Incremental Load
+
+*Incremental Load* refers to the process of loading only the new or changed data since the last successful load. A Tumbling Window Trigger can help manage this by processing data in fixed, time-based chunks, typically based on the time when the data was created or modified.
+
+Here’s how a Tumbling Window Trigger can be leveraged for incremental loads:
+
+### 1. *Window-Based Partitioning*
+The Tumbling Window Trigger divides time into *fixed-length, non-overlapping windows*, like hourly, daily, or any other custom time duration. For each window, you can configure your pipeline to:
+
+- **Identify the new or modified data**: Each window processes data that is created or modified during that time period (e.g., data generated between 1 PM and 2 PM).
+- **Load only incremental data**: The pipeline extracts and loads only the data that has changed during that window, avoiding full reloads of the entire dataset.
+- **Ensure consistency**: As each window is processed independently and sequentially, you avoid overlapping data loads and maintain a consistent process for incremental loading.
+
+### 2. *Use Cases in Incremental Load*
+
+Here’s how Tumbling Window Triggers can fit different types of incremental load scenarios:
+
+#### a) *Data based on a Timestamp (e.g., CreatedDate or ModifiedDate)*
+- In this case, each window processes records that were *created or updated* within a specific time window (e.g., all records updated between 1 PM and 2 PM).
+- Example: If you have a transactional system where records are constantly updated or added, you can use the *Tumbling Window Trigger* with a *1-hour window* to pick up any new or updated records during that window. Your pipeline can extract only the data with a `CreatedDate` or `ModifiedDate` that falls within the start and end time of the window.
+
+#### b) *Change Data Capture (CDC)*
+- If you are using a *Change Data Capture (CDC)* mechanism (either in your source system or through Azure services like *Azure SQL Database or Azure Data Lake Storage*), the Tumbling Window Trigger can help process data that has been marked as changed in the time window.
+- The window ensures that you process only the changes (insertions, updates, or deletions) that happened in the given period, maintaining efficiency in the incremental load.
+
+#### c) *Batch Processing*
+- For example, if you are processing transactional data that arrives at a regular interval (e.g., every hour), the Tumbling Window Trigger would ensure that each hourly batch is processed independently and that only the new data (new records or changes) since the last window is loaded.
+  
+### 3. *Pipeline Design for Incremental Load Using Tumbling Window Trigger*
+
+To implement incremental load with a Tumbling Window Trigger, follow these general steps:
+
+1. **Configure the Tumbling Window Trigger**:
+   - Define the window size (e.g., 1 hour, 1 day).
+   - Set the start time and frequency for the trigger (e.g., if you want it to run every hour, it will process data from 12:00–1:00, then 1:00–2:00, etc.).
+
+2. **Create the Pipeline**:
+   - In the pipeline, use the window start time and end time to filter the source data.
+   - For example, use a *SQL query* or *Data Flow* to pull only the data that falls between the start and end of the current window (e.g., `CreatedDate >= start_time AND CreatedDate < end_time`).
+   - Optionally, use a *checkpointing mechanism* to track the last processed record (e.g., storing the maximum `CreatedDate` or `ID` processed for each window).
+
+3. **Handling Failures**:
+   - If a pipeline fails, the Tumbling Window Trigger ensures that only the specific window that failed is retried (this can be configured with retries or retries on failure).
+   - You can reprocess the data from a specific window without affecting other windows.
+
+4. **Data Loading**:
+   - Load the filtered incremental data into the target system (e.g., a data warehouse or a storage account).
+   - Ensure that your pipeline supports *idempotency* (if necessary) to avoid loading duplicate data in case of retries.
+
+### Example: Incremental Load with Tumbling Window Trigger
+
+Let’s say you have a source SQL database, and your source table has a `LastModifiedDate` column. You want to process only the records that have been modified in the last hour and load them into an Azure SQL Data Warehouse.
+
+1. *Configure Tumbling Window Trigger* with:
+   - Window Size: *1 hour*
+   - Recurrence: Every 1 hour (from 12:00-1:00, 1:00-2:00, etc.).
+
+2. **In the Pipeline**:
+   - Use a *Copy Activity* or *Data Flow* to filter data where the `LastModifiedDate` falls within the current window (e.g., from `StartTime` to `EndTime`).
+   - The pipeline should only extract records that were modified during that time window.
+
+### 4. *Benefits of Tumbling Window Trigger for Incremental Load*
+
+- **Avoids Full Reloads**: Since only data within the defined window is processed, you’re only loading a small subset of data, which reduces the overhead and processing time compared to full loads.
+- **Fault Tolerance**: The Tumbling Window Trigger ensures that if one window fails, only that window needs to be retried, without affecting subsequent windows. This provides better reliability in the data processing workflow.
+- **Scalability**: It can scale easily for large datasets because it processes data in manageable chunks, and you can set different window sizes based on your data volume and processing capacity.
+- **Data Consistency**: By processing data in defined windows, you can ensure that each batch is isolated and doesn't interfere with other data loads, helping to maintain data consistency.
+
+### Conclusion
+A *Tumbling Window Trigger* is a great choice for *incremental loading* when you need to process data in defined time slices (e.g., hourly or daily) and ensure that data from each time window is processed independently and sequentially. It works particularly well for scenarios where you have *time-based data* or *data change tracking* like `LastModifiedDate`, `Timestamp`, or using *Change Data Capture (CDC)* mechanisms.
